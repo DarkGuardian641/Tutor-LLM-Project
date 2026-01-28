@@ -48,3 +48,5 @@ backend/chroma_db/
 # OS
 Thumbs.db
 Desktop.ini
+
+ollama.txt
