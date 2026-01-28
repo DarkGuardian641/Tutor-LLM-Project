@@ -1,0 +1,17 @@
+langchain
+langchain-community
+langchain-ollama
+langchain-chroma
+chromadb
+unstructured
+networkx
+pdfminer.six
+pi_heif
+unstructured-inference
+pdf2image
+pytesseract
+pypdf
+reportlab
+fastapi
+uvicorn
+python-multipart
