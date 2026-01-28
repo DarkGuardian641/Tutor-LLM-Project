@@ -50,3 +50,6 @@ Thumbs.db
 Desktop.ini
 
 ollama.txt
+node_modules/
+start.bat
+chroma_db_v3/
