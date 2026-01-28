@@ -1,0 +1,352 @@
+/* Flashcards.css */
+.flashcards-container {
+    padding: 30px;
+    height: 100%;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Allow page scroll if needed */
+}
+
+/* Config / Welcome View */
+.flashcards-container.config {
+    align-items: center;
+    justify-content: center;
+}
+
+.fc-welcome {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.fc-welcome h1 {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.fc-welcome p {
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    font-size: 1.1rem;
+}
+
+.fc-input-group {
+    display: flex;
+    gap: 12px;
+    background-color: var(--bg-secondary);
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.fc-input-group input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+}
+
+.fc-input-group button {
+    background-color: var(--accent-orange);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.fc-input-group button:hover {
+    filter: brightness(1.1);
+}
+
+.fc-input-group button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Upload Section */
+.fc-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0;
+    position: relative;
+    width: 100%;
+}
+
+.fc-divider::before, .fc-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.fc-divider span {
+    padding: 0 12px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.fc-upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.upload-generate-btn {
+    background-color: var(--bg-tertiary);
+    border: 1px dashed var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.upload-generate-btn:hover {
+    background-color: rgba(255, 87, 34, 0.05);
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+}
+
+.upload-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+
+/* Active View */
+.fc-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    padding: 0;
+    justify-self: start;
+    transition: color 0.2s;
+}
+
+.back-btn:hover {
+    color: var(--text-primary);
+}
+
+.fc-header h2 {
+    font-size: 1.2rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    /* Ensure title doesn't break alignment */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.progress-wrapper {
+    font-weight: bold;
+    color: var(--text-secondary);
+    justify-self: end;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: var(--bg-tertiary);
+    border-radius: 3px;
+    margin-bottom: 40px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--accent-orange);
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+/* Flip Card Stage */
+.card-stage {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Vertically center the card in the available space */
+    perspective: 1000px;
+    margin-bottom: 30px;
+    min-height: 450px; /* Ensure space for card */
+}
+
+.flashcard {
+    width: 100%;
+    max-width: 700px; /* Good width for reading */
+    height: 450px;    /* Fixed height for consistent flipping */
+    background-color: transparent;
+    border-radius: 20px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    cursor: pointer;
+}
+
+.flashcard.flipped {
+    transform: rotateY(180deg);
+}
+
+/* Common Card Face Styles */
+.flashcard .card-front, .flashcard .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    
+    background-color: #ffffff; /* White card */
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15); /* Softer, deeper shadow */
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Back Face Specifics */
+.flashcard .card-back {
+    transform: rotateY(180deg);
+    background-color: #f8faff; /* Very subtle tint for answer side */
+    border: 2px solid var(--accent-orange); /* Highlight answer side */
+}
+
+.card-label {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #888;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.card-content {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #1a1a1a;
+    
+    /* Text Overflow Handling */
+    width: 100%;
+    overflow-y: auto; /* Scroll if text is huge */
+    word-break: break-word; /* Prevent long words from breaking layout */
+    max-height: 280px; /* Leave room for label and hint */
+    
+    /* Scrollbar styling for card content */
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+}
+
+.card-content::-webkit-scrollbar {
+    width: 6px;
+}
+.card-content::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 3px;
+}
+
+.tap-hint {
+    position: absolute;
+    bottom: 25px;
+    font-size: 0.8rem;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.8;
+}
+
+/* Controls */
+.fc-controls {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding-bottom: 20px;
+}
+
+.nav-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.nav-btn:hover:not(:disabled) {
+    background-color: var(--accent-orange);
+    color: white;
+    border-color: var(--accent-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 87, 34, 0.4);
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    box-shadow: none;
+}
+
+/* Loading State */
+.flashcards-container.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.flashcards-container.loading p {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}

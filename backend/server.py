@@ -8,10 +8,10 @@ from typing import Optional, List
 import datetime
 
 from src.ingestion import load_document, split_documents
-from src.ingestion import load_document, split_documents
 from src.database import get_vector_store, add_documents_to_store
 from src.rag import get_smart_response_chain
 from src.flashcards import get_flashcard_chain
+from src.quiz import get_quiz_chain
 
 app = FastAPI(title="Tutor LLM API")
 
@@ -127,9 +127,30 @@ async def query_rag(request: QueryRequest):
 def generate_flashcards(request: FlashcardRequest):
     try:
         flashcard_chain = get_flashcard_chain(vector_store)
+        # The chain input is just the topic string because of RunnablePassthrough assigned to "topic"
         response = flashcard_chain.invoke(request.topic)
-        return {"topic": request.topic, "flashcards": response}
+        return {"topic": request.topic, "flashcards": response["flashcards"] if "flashcards" in response else response}
     except Exception as e:
+        print(f"Error generating flashcards: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class QuizRequest(BaseModel):
+    topic: str
+    count: int = 5
+    difficulty: str = "Medium"
+
+@app.post("/generate_quiz")
+def generate_quiz(request: QuizRequest):
+    try:
+        quiz_func = get_quiz_chain(vector_store)
+        result = quiz_func({
+            "topic": request.topic,
+            "count": request.count,
+            "difficulty": request.difficulty
+        })
+        return result
+    except Exception as e:
+        print(f"Error generating quiz: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
