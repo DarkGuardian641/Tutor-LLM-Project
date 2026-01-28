@@ -40,10 +40,10 @@ backend/chroma_db/
 .idea/
 
 # Local Data
-data/
-!data/.keep
-backend/test_doc.pdf
-backend/sample_content.txt
+# data/
+# !data/.keep
+# backend/test_doc.pdf
+# backend/sample_content.txt
 
 # OS
 Thumbs.db

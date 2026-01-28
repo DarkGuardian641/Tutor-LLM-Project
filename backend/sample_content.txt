@@ -1,0 +1,6 @@
+This is a sample document for testing the Local RAG pipeline.
+It contains information about the project layout and the tools used.
+We are using LangChain, Ollama, and Chroma.
+The model used is Gemma.
+This project is built by Antigravity.
+The goal is to demonstrate a local RAG setup.
