@@ -27,3 +27,5 @@ def split_documents(docs: List[Document], chunk_size: int = 1000, chunk_overlap:
     splits = text_splitter.split_documents(docs)
     print(f"Created {len(splits)} chunks")
     return splits
+
+

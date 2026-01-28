@@ -4,7 +4,7 @@ from typing import List
 from langchain_core.documents import Document
 import os
 
-def get_vector_store(collection_name: str = "rag_collection", persist_directory: str = "./chroma_db", embedding_model: str = "gemma:2b") -> Chroma:
+def get_vector_store(collection_name: str = "rag_collection", persist_directory: str = "./chroma_db", embedding_model: str = "nomic-embed-text") -> Chroma:
     """
     Initializes and returns the Chroma vector store with Ollama embeddings.
     """
