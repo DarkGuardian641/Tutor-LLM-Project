@@ -1,14 +1,26 @@
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List
 from langchain_core.documents import Document
+import os
 
-def load_pdf(file_path: str) -> List[Document]:
+def load_document(file_path: str) -> List[Document]:
     """
-    Loads a PDF file using PyPDFLoader.
+    Loads a document based on its file extension.
+    Supports PDF, TXT, DOCX.
     """
-    print(f"Loading PDF from: {file_path}")
-    loader = PyPDFLoader(file_path)
+    ext = os.path.splitext(file_path)[1].lower()
+    print(f"Loading document from: {file_path} (Type: {ext})")
+    
+    if ext == '.pdf':
+        loader = PyPDFLoader(file_path)
+    elif ext == '.txt':
+        loader = TextLoader(file_path)
+    elif ext == '.docx':
+        loader = Docx2txtLoader(file_path)
+    else:
+        raise ValueError(f"Unsupported file type: {ext}")
+
     docs = loader.load()
     print(f"Loaded {len(docs)} document(s)")
     if docs:

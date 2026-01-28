@@ -1,0 +1,453 @@
+.chatbot-content {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg-primary);
+    overflow: hidden;
+}
+
+/* Chat Section */
+.chat-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+}
+
+.chat-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-icon {
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.folders-btn {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.chat-content {
+    flex: 1;
+    padding: 20px 80px; /* Centered narrow feel */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.bot-message, .user-message-container {
+    display: flex;
+    gap: 16px;
+    max-width: 800px;
+}
+
+.user-message-container {
+    align-self: flex-end; /* Or keep left but align contents */
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.bot-avatar, .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.bot-avatar {
+    background-color: var(--accent-orange);
+}
+
+.user-avatar {
+    background-color: var(--bg-tertiary); 
+}
+
+.message-text {
+    background-color: transparent;
+    line-height: 1.6;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.user-message {
+    background-color: var(--bg-secondary);
+    padding: 12px 16px;
+    border-radius: 12px;
+}
+
+.suggestion-cards {
+    display: flex;
+    gap: 16px;
+    margin-left: 52px; /* Indent to match text */
+}
+
+.card {
+     background-color: var(--bg-secondary);
+     border: 1px solid var(--border-color);
+     padding: 16px;
+     border-radius: 12px;
+     width: 300px;
+     cursor: pointer;
+     transition: border-color 0.2s;
+}
+
+.card:hover {
+    border-color: var(--text-secondary);
+}
+
+.card .label {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.label.physics { color: #5c87ff; background: rgba(92, 135, 255, 0.1); }
+.label.biology { color: #4caf50; background: rgba(76, 175, 80, 0.1); }
+
+.message-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.action-pill {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.chat-input-area {
+    padding: 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.input-wrapper {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.input-wrapper input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    flex: 1;
+    font-size: 1rem;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+}
+
+.send-btn {
+    background-color: var(--accent-orange);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disclaimer {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+/* Right Panel */
+.knowledge-base-panel {
+    width: 300px;
+    background-color: #161616; /* Slightly lighter/different than primary */
+    border-left: 1px solid var(--border-color);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.kb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kb-header h3 {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.view-all {
+    color: var(--accent-orange);
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+.kb-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    flex: 1;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid transparent;
+}
+
+.file-item.active {
+    background-color: #1e1e1e; /* Ensure visibility */
+    border: 1px solid var(--border-color);
+}
+
+.file-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.file-icon.pdf { background-color: #ff5722; }
+.file-icon.audio { background-color: #2196f3; }
+.file-icon.link { background-color: #4caf50; }
+
+.file-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.file-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    height: 3px;
+    background-color: #444;
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background-color: var(--accent-orange);
+}
+
+.status {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.stats-grid {
+    display: flex;
+    gap: 12px;
+}
+
+.stat-card {
+    flex: 1;
+    background-color: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 4px 0;
+}
+
+.stat-trend {
+    font-size: 0.7rem;
+    color: #4caf50;
+}
+
+.stat-sub {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.new-folder-btn {
+    margin-top: auto;
+    background-color: transparent;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+
+.new-folder-btn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Markdown Styles */
+.message-text h1, .message-text h2, .message-text h3 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.message-text p {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.message-text ul, .message-text ol {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+.message-text li {
+    margin-bottom: 4px;
+}
+
+.message-text code {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #ff9f43;
+}
+
+.message-text pre {
+    background-color: #1e1e1e;
+    padding: 10px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
+
+.message-text pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #f0f0f0;
+}
+
+.message-text strong {
+    color: var(--accent-color);
+}
+
+/* Table Styles */
+.message-text table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.95rem;
+}
+
+.message-text th, .message-text td {
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.message-text th {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+}
+
+.message-text tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+

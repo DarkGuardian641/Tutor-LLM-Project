@@ -1,0 +1,50 @@
+# Project Work Summary - TutorLLM
+
+## 1. Backend (@[backend])
+Located in `c:\Visual Studio Code\Tutor LLM Project\backend`
+
+- **API Improvements (`server.py`)**:
+  - Implemented `StreamingResponse` for `/query` endpoint to enable real-time token generation.
+  - Added `CORSMiddleware` to allow requests from the Vite frontend.
+  - Added `GET /files` endpoint to list available documents in the Knowledge Base.
+  - Added `POST /ingest` endpoint compatibility for file uploads.
+
+- **Intent Routing & RAG Logic (`src/rag.py`)**:
+  - Implemented **Intent Classification**: The system now distinguishes between `GREETING`, `GENERAL` chat, and `TEXTBOOK` queries.
+  - **Smart Routing**:
+    - **Greetings**: Bypass RAG, reply instantly.
+    - **General**: Bypass RAG, use broad LLM knowledge.
+    - **Textbook**: Search vector DB (`chroma_db_v3`), and provide context-aware answers.
+  - **Prompt Refinement**:
+    - Renamed assistant to **"TutorLLM"**.
+    - Added "concise and helpful" instructions to prevent verbosity.
+    - Added conditional logic: If context is missing, the bot admits it and falls back to general knowledge.
+
+- **Database & Embeddings**:
+  - Resolved embedding dimension mismatch issues (768 vs 2048) by resetting the vector store.
+  - Validated data ingestion pipeline.
+
+## 2. Frontend (@[frontend])
+Located in `c:\Visual Studio Code\Tutor LLM Project\frontend`
+
+- **Architecture Refactor**:
+  - restructuring: organized into `components/`, `pages/`, and `styles/`.
+  - **Global Sidebar**: Moved `Sidebar` to `App.jsx` and created a persistent global flex layout in `App.css`. `Chatbot.jsx` is now a content-only page.
+
+- **Features (`Chatbot.jsx`)**:
+  - **Streaming Support**: Refactored `handleSendMessage` to consume the backend stream incrementally using `TextDecoder`.
+  - **Markdown & Tables**: Integrated `react-markdown` with `remark-gfm` to render rich text and GitHub-flavored tables.
+  - **File Management**: Implemented real-time file uploading and listing synced with the backend.
+  - **Bug Fix**: Fixed the "Double Response" issue caused by React Strict Mode and impure state updates.
+
+- **Styling (`styles/`)**:
+  - Created `App.css` for the application shell.
+  - Updated `Chatbot.css` for the 3-column layout (Chat, Sidebar, Knowledge Base).
+  - Added specialized CSS for Markdown tables (borders, padding, dark-mode visuals).
+
+## 3. Data & Storage (@[data], @[chroma_db_v3])
+- Verified `data/` directory creation for document storage.
+- Managed `chroma_db_v3/` life-cycle (deletion and recreation) to fix dimension errors.
+
+## Summary of Status
+The system is now a fully functional, streaming RAG chatbot with hybrid routing capabilities. It handles file uploads, renders complex markdown, and has a consistent, bug-free global layout.
