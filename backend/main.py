@@ -46,6 +46,5 @@ def main():
         response = flashcard_chain.invoke(args.flashcards)
         print("Flashcards:")
         print(response)
-
 if __name__ == "__main__":
     main()
