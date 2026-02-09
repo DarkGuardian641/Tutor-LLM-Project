@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader, CSVLoader, UnstructuredExcelLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List
 from langchain_core.documents import Document
@@ -12,14 +12,27 @@ def load_document(file_path: str) -> List[Document]:
     ext = os.path.splitext(file_path)[1].lower()
     print(f"Loading document from: {file_path} (Type: {ext})")
     
+    # Map of extensions to loaders
+    code_extensions = ['.py', '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.java', '.cpp', '.c', '.h', '.json', '.md', '.sql', '.sh', '.bat', '.txt']
+    
     if ext == '.pdf':
         loader = PyPDFLoader(file_path)
-    elif ext == '.txt':
-        loader = TextLoader(file_path)
     elif ext == '.docx':
         loader = Docx2txtLoader(file_path)
+    elif ext == '.csv':
+        loader = CSVLoader(file_path)
+    elif ext in ['.xlsx', '.xls']:
+        loader = UnstructuredExcelLoader(file_path)
+    elif ext in code_extensions:
+        # Treat code/text files as text
+        loader = TextLoader(file_path, encoding='utf-8')
     else:
-        raise ValueError(f"Unsupported file type: {ext}")
+        # Fallback to TextLoader for unknown text-based files, or raise error
+        # Trying TextLoader as a fallback for potential other code files
+        try:
+            loader = TextLoader(file_path, encoding='utf-8')
+        except:
+             raise ValueError(f"Unsupported file type: {ext}")
 
     docs = loader.load()
     print(f"Loaded {len(docs)} document(s)")

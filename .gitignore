@@ -22,8 +22,15 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Virtual Environment
+# Environment Files
 .env
+.env.*
+!.env.example
+backend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Virtual Environment
 .venv
 env/
 venv/
@@ -31,26 +38,33 @@ ENV/
 env.bak/
 venv.bak/
 
-# Chroma DB
+# Data & Databases
 chroma_db/
-backend/chroma_db/
 chroma_db_v3/
+backend/chroma_db/
+data/
+backend/data/
+*.db
+!data/.keep
 
 # Editors
 .vscode/
 .idea/
 
-# Local Data
-# data/
-# !data/.keep
-# backend/test_doc.pdf
-# backend/sample_content.txt
-
 # OS
 Thumbs.db
 Desktop.ini
 
-ollama.txt
+# Dependencies & Builds
 node_modules/
-start.bat
+frontend/node_modules/
+dist/
+frontend/dist/
+frontend/build/
 
+# Documentation Exports
+*.docx
+*.pdf
+!data/*.pdf
+!backend/data/*.pdf
+ollama.txt

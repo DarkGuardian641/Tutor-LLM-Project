@@ -12,3 +12,10 @@ pdf2image
 pytesseract
 pypdf
 reportlab
+httpx
+python-jose[cryptography]
+python-dotenv
+pandas
+openpyxl
+docx2txt
+passlib[bcrypt]

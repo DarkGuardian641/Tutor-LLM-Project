@@ -131,6 +131,7 @@ const Flashcards = () => {
             <div className="flashcards-container loading">
                  <Loader className="spin" size={48} color="var(--accent-orange)" />
                  <p>Generating flashcards for "{topic}"...</p>
+                 <span style={{fontSize: '0.9rem', color: '#666', marginTop: '10px'}}>This might take a moment.</span>
             </div>
         );
     }

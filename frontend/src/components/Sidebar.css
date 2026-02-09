@@ -56,22 +56,111 @@
     stroke: var(--accent-orange);
 }
 
+.user-profile-container {
+    margin-top: auto;
+    position: relative;
+    width: 100%;
+}
+
 .user-profile {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px;
     border-top: 1px solid var(--border-color);
-    margin-top: auto;
     color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-radius: 8px;
+}
+
+.user-profile.active {
+    background-color: var(--bg-tertiary);
+}
+
+.user-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    margin-bottom: 8px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    box-sizing: border-box;
+    animation: popupFadeIn 0.2s ease;
+}
+
+@keyframes popupFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    color: #ef5350; /* Red color */
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+}
+
+.logout-btn:hover {
+    background-color: rgba(239, 83, 80, 0.1);
+}
+
+.user-profile:hover {
+    background-color: var(--bg-tertiary);
 }
 
 .avatar {
     width: 32px;
     height: 32px;
+    min-width: 32px; /* Prevent shrinking */
     background-color: var(--bg-tertiary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* Ensure image stays updating circle */
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.user-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9rem;
+}
+
+.user-email {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

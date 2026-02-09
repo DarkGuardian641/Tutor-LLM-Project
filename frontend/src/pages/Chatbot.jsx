@@ -6,7 +6,7 @@ import '../styles/Chatbot.css';
 
 const API_BASE_URL = 'http://localhost:8000';
 
-const Chatbot = () => {
+const Chatbot = ({ user }) => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState([
         {
@@ -18,6 +18,10 @@ const Chatbot = () => {
     const [files, setFiles] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
     
+    const [chatId, setChatId] = useState(null);
+    const [chatHistory, setChatHistory] = useState([]);
+    const [chatTitle, setChatTitle] = useState("New Chat");
+
     // Auto-scroll to bottom of chat
     const chatContentRef = useRef(null);
 
@@ -27,21 +31,52 @@ const Chatbot = () => {
         }
     }, [messages]);
 
-    // Fetch files on mount
+    // Fetch chat history on mount/user change
     useEffect(() => {
-        fetchFiles();
-    }, []);
+        if (user?.email) {
+            fetchChatHistory();
+        }
+    }, [user]);
 
-    const fetchFiles = async () => {
+    const fetchChatHistory = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/files`);
+            const response = await fetch(`${API_BASE_URL}/chats?user_email=${encodeURIComponent(user.email)}`);
             if (response.ok) {
                 const data = await response.json();
-                setFiles(data);
+                setChatHistory(data);
             }
         } catch (error) {
-            console.error("Error fetching files:", error);
+            console.error("Error fetching chat history:", error);
         }
+    };
+
+    const loadChat = async (id) => {
+        if (id === chatId) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/chats/${id}?user_email=${encodeURIComponent(user.email)}`);
+            if (response.ok) {
+                const data = await response.json();
+                // Transform messages to match frontend format
+                const formattedMessages = data.messages.map(m => ({
+                    type: m.role === 'user' ? 'user' : 'bot',
+                    text: m.content
+                }));
+                setMessages(formattedMessages);
+                setChatId(id);
+                setChatTitle(data.title || "New Chat");
+            }
+        } catch (error) {
+            console.error("Error loading chat:", error);
+        }
+    };
+
+    const startNewChat = () => {
+        setChatId(null);
+        setChatTitle("New Chat");
+        setMessages([{
+            type: 'bot',
+            text: "Hello! I'm your study assistant. Ask me anything about your documents or any general subject you're working on."
+        }]);
     };
 
     const handleSendMessage = async () => {
@@ -55,13 +90,40 @@ const Chatbot = () => {
         // Add a placeholder bot message
         setMessages(prev => [...prev, { type: 'bot', text: '' }]);
 
+        let currentChatId = chatId;
+
+        // Lazy create chat if not exists
+        if (!currentChatId && user?.email) {
+            try {
+                const newTitle = inputValue.substring(0, 30) + (inputValue.length > 30 ? "..." : "");
+                const createRes = await fetch(`${API_BASE_URL}/chats`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_email: user.email, title: newTitle })
+                });
+                if (createRes.ok) {
+                    const data = await createRes.json();
+                    currentChatId = data.chat_id;
+                    setChatId(currentChatId);
+                    setChatTitle(newTitle);
+                    fetchChatHistory(); // Refresh list to show new chat
+                }
+            } catch (error) {
+                console.error("Error creating chat:", error);
+            }
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}/query`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ question: userMessage.text }),
+                body: JSON.stringify({ 
+                    question: userMessage.text,
+                    user_email: user?.email,
+                    chat_id: currentChatId
+                }),
             });
 
             if (!response.ok) {
@@ -102,6 +164,7 @@ const Chatbot = () => {
             });
         } finally {
             setIsLoading(false);
+            if (user?.email) fetchChatHistory(); // Refresh history to update preview/timestamp
         }
     };
 
@@ -111,8 +174,18 @@ const Chatbot = () => {
 
         const formData = new FormData();
         formData.append('file', file);
+        if (user?.email) formData.append('user_email', user.email);
+        if (chatId) formData.append('chat_id', chatId);
 
         setIsUploading(true);
+        // Add user message for uploading
+        const tempUserId = Date.now();
+        
+        setMessages(prev => [
+            ...prev, 
+            { type: 'user', text: `📂 Uploading ${file.name}...`, id: tempUserId }
+        ]);
+
         try {
             const response = await fetch(`${API_BASE_URL}/ingest`, {
                 method: 'POST',
@@ -120,17 +193,36 @@ const Chatbot = () => {
             });
 
             if (response.ok) {
-                // Refresh file list
-                fetchFiles();
-                alert("File uploaded and ingested successfully!");
+                // Update user message to distinct "Uploaded" state
+                setMessages(prev => {
+                    const updated = prev.map(msg => {
+                        if (msg.id === tempUserId) {
+                            return { ...msg, text: `📂 Uploaded: ${file.name}` };
+                        }
+                        return msg;
+                    });
+                    // Add bot confirmation
+                    return [...updated, { type: 'bot', text: `✅ Document processed successfully: ${file.name}` }];
+                });
             } else {
-                alert("Failed to upload file.");
+                 setMessages(prev => prev.map(msg => {
+                    if (msg.id === tempUserId) return { ...msg, text: `❌ Failed to upload: ${file.name}` };
+                    return msg;
+                }));
             }
         } catch (error) {
             console.error("Error uploading file:", error);
+            setMessages(prev => {
+                const updated = prev.map(msg => {
+                     if (msg.id === tempUserId) return { ...msg, text: `❌ Error uploading: ${file.name}` };
+                     return msg;
+                });
+                return [...updated, { type: 'bot', text: `❌ Server error during upload.` }];
+            });
             alert("Error uploading file.");
         } finally {
             setIsUploading(false);
+            if (user?.email) fetchChatHistory();
         }
     };
 
@@ -157,11 +249,8 @@ const Chatbot = () => {
             {/* Main Chat Area */}
             <div className="chat-section">
                 <header className="chat-header">
-                    <h2>Chat & Knowledge Base</h2>
+                    <h2>{chatTitle}</h2>
                     <div className="header-actions">
-                        <Search className="header-icon" />
-                        <button className="folders-btn"><Folder size={16} /> Folders</button>
-                        <Clock className="header-icon" />
                     </div>
                 </header>
 
@@ -175,7 +264,14 @@ const Chatbot = () => {
                                     </div>
                                     <div className="message-content">
                                         <div className="message-text">
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                                            {msg.type === 'uploading' ? (
+                                                <div className="uploading-message">
+                                                    <Loader className="spin" size={16} /> 
+                                                    <span>{msg.text}</span>
+                                                </div>
+                                            ) : (
+                                                msg.text ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown> : (isLoading && index === messages.length - 1 && <span className="thinking">Thinking...</span>)
+                                            )}
                                         </div>
                                     </div>
                                 </>
@@ -184,26 +280,23 @@ const Chatbot = () => {
                                     <div className="user-message">
                                         {msg.text}
                                     </div>
-                                    <div className="user-avatar">👤</div>
+                                    <div className="user-avatar">
+                                        {user?.picture ? <img src={user.picture} alt="User" referrerPolicy="no-referrer" /> : "👤"}
+                                    </div>
                                 </>
                              )}
                         </div>
                     ))}
                     
-                    {isLoading && (
-                        <div className="bot-message">
-                             <div className="bot-avatar"><div className="bot-icon">🎓</div></div>
-                             <div className="message-text">Thinking...</div>
-                        </div>
-                    )}
+
                 </div>
 
                 <div className="chat-input-area">
-                    <div className="input-wrapper">
+                    <div className="chat-input-wrapper">
                         <button className="icon-btn" onClick={triggerFileInput}>
-                            <Paperclip className="input-icon" size={20} />
+                            <Paperclip className="chat-upload-icon" size={20} />
                         </button>
-                        <div className="image-icon-wrapper"><div className="image-icon">🖼️</div></div>
+
                         <input 
                             type="text" 
                             placeholder="Type your question here..." 
@@ -219,42 +312,47 @@ const Chatbot = () => {
                 </div>
             </div>
 
-            {/* Right Panel: Knowledge Base */}
+            {/* Right Panel: Chat History */}
             <div className="knowledge-base-panel">
                 <div className="kb-header">
-                    <h3>KNOWLEDGE BASE</h3>
-                    <a href="#" className="view-all">View all</a>
-                </div>
-
-                <div className="kb-actions">
-                    <input 
-                        type="file" 
-                        id="file-upload-input" 
-                        style={{display: 'none'}} 
-                        onChange={handleFileUpload} 
-                        accept=".pdf,.doc,.docx,.txt"
-                    />
-                    <div className="action-btn upload" onClick={triggerFileInput}>
-                        {isUploading ? <Loader className="spin" size={20} /> : <Upload size={20} />}
-                        <span>{isUploading ? 'Uploading...' : 'Upload'}</span>
+                    <h3>CHAT HISTORY</h3>
+                    <div className="new-chat-btn" onClick={startNewChat} style={{cursor: 'pointer', color: 'var(--accent-orange)', fontSize: '0.8rem'}}>
+                        <Plus size={16} /> New
                     </div>
                 </div>
 
                 <div className="file-list">
-                    {files.length === 0 ? (
-                        <div style={{color: '#666', fontSize: '0.9rem', textAlign: 'center', marginTop: '20px'}}>No files uploaded yet.</div>
+                    {chatHistory.length === 0 ? (
+                        <div style={{color: '#666', fontSize: '0.9rem', textAlign: 'center', marginTop: '20px'}}>No previous chats.</div>
                     ) : (
-                        files.map((file, index) => (
-                            <div key={index} className="file-item">
-                                <div className="file-icon pdf"><File size={20} /></div>
+                        chatHistory.map((chat) => (
+                            <div 
+                                key={chat.id} 
+                                className={`file-item ${chatId === chat.id ? 'active' : ''}`}
+                                onClick={() => loadChat(chat.id)}
+                            >
+                                <div className="file-icon" style={{backgroundColor: '#333'}}>
+                                    <Clock size={20} />
+                                </div>
                                 <div className="file-info">
-                                    <div className="file-name" title={file.name}>{file.name}</div>
-                                    <div className="file-meta">{formatFileSize(file.size)}</div>
+                                    <div className="file-name" title={chat.title}>{chat.title || "Untitled Chat"}</div>
+                                    <div className="file-meta">
+                                        {chat.updated_at ? new Date(chat.updated_at).toLocaleDateString() : ""}
+                                    </div>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
+                
+                {/* Hidden file input for uploads */}
+                <input 
+                    type="file" 
+                    id="file-upload-input" 
+                    style={{display: 'none'}} 
+                    onChange={handleFileUpload} 
+                    accept="*"
+                />
             </div>
         </div>
     );
