@@ -16,6 +16,7 @@ const Quizzes = () => {
     const [topic, setTopic] = useState('');
     const [uploadedFile, setUploadedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [activeDocument, setActiveDocument] = useState(null);
 
     // Quiz Data
     const [questions, setQuestions] = useState([]);
@@ -38,6 +39,7 @@ const Quizzes = () => {
 
             if (response.ok) {
                 setUploadedFile(file.name);
+                setActiveDocument(file.name);
                 alert("File uploaded!");
             } else {
                 alert("Upload failed.");
@@ -52,14 +54,19 @@ const Quizzes = () => {
     const generateQuiz = async () => {
         setStatus('loading');
         try {
+            const requestBody = {
+                topic: topic,
+                count: numQuestions,
+                difficulty: difficulty
+            };
+            if (source === 'file' && activeDocument) {
+                requestBody.active_document = activeDocument;
+            }
+
             const response = await fetch(`${API_BASE_URL}/generate_quiz`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    topic: topic, // If empty, backend handles it
-                    count: numQuestions,
-                    difficulty: difficulty
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (response.ok) {

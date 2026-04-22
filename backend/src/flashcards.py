@@ -15,18 +15,25 @@ class Flashcard(BaseModel):
 class FlashcardSet(BaseModel):
     flashcards: List[Flashcard]
 
-def get_flashcard_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"):
+def get_flashcard_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud", active_document: str = None):
     """
     Creates and returns a chain for generating flashcards in JSON format.
     """
-    retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+    search_kwargs = {"k": 5}
+    if active_document:
+        search_kwargs["filter"] = {"source": active_document}
+        print(f"Filtering Flashcards context for document: {active_document}")
+        
+    retriever = vector_store.as_retriever(search_kwargs=search_kwargs)
     
     llm = ChatOllama(model=llm_model, temperature=0.5)
 
     parser = JsonOutputParser(pydantic_object=FlashcardSet)
 
     template = """You are an intelligent tutor helper.
-    Create 10 flashcards based on the following context for the given topic: "{topic}".
+    Create 10 flashcards based on the following context ONLY for the given topic: "{topic}".
+    
+    CRITICAL INSTRUCTION: You MUST use the provided Context below to generate these flashcards. Do NOT use your general knowledge unless the context is completely empty or utterly irrelevant.
     
     Context:
     {context}

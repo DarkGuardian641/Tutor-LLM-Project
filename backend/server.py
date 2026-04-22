@@ -51,6 +51,7 @@ class QueryRequest(BaseModel):
     question: str
     user_email: Optional[str] = None
     chat_id: Optional[str] = None
+    active_document: Optional[str] = None
 
 class ChatRequest(BaseModel):
     user_email: str
@@ -58,6 +59,7 @@ class ChatRequest(BaseModel):
 
 class FlashcardRequest(BaseModel):
     topic: str
+    active_document: Optional[str] = None
 
 @app.get("/")
 def health_check():
@@ -131,6 +133,15 @@ async def ingest_document(
 
         # Trigger ingestion
         docs = load_document(file_path)
+        
+        # Explicitly tag the documents' metadata with the filename so they can be isolated
+        for doc in docs:
+             if 'source' not in doc.metadata or not doc.metadata['source']:
+                 doc.metadata['source'] = file.filename
+             elif os.path.isabs(doc.metadata['source']):
+                 # Fallback: keep just the basename for easier querying
+                 doc.metadata['source'] = os.path.basename(doc.metadata['source'])
+
         splits = split_documents(docs)
         add_documents_to_store(vector_store, splits)
         
@@ -148,8 +159,8 @@ async def ingest_document(
 @app.post("/query")
 async def query_rag(request: QueryRequest):
     try:
-        # Get chains
-        chains = get_smart_response_chain(vector_store)
+        # Get chains with active document context isolated if provided
+        chains = get_smart_response_chain(vector_store, active_document=request.active_document)
         
         # 1. Classify Intent
         intent = chains["classifier"].invoke({"question": request.question})
@@ -167,6 +178,8 @@ async def query_rag(request: QueryRequest):
 
         # 3. Stream Response
         async def generate():
+            import asyncio
+            import re
             full_response = ""
             # Save user message if tracking is enabled
             if request.user_email and request.chat_id:
@@ -174,9 +187,26 @@ async def query_rag(request: QueryRequest):
 
             stream_input = request.question if selected_chain == chains["rag"] else {"question": request.question}
 
+            buffer = ""
             for chunk in selected_chain.stream(stream_input):
-                full_response += str(chunk)
-                yield chunk
+                text_chunk = str(chunk)
+                full_response += text_chunk
+                buffer += text_chunk
+                
+                parts = re.split(r'(\s+)', buffer)
+                if len(parts) > 1:
+                    for i in range(len(parts) - 1):
+                        part = parts[i]
+                        if part:
+                            yield part
+                            if part.strip():
+                                await asyncio.sleep(0.05)
+                    buffer = parts[-1]
+            
+            if buffer:
+                yield buffer
+                if buffer.strip():
+                    await asyncio.sleep(0.05)
             
             # Save bot response if tracking is enabled
             if request.user_email and request.chat_id:
@@ -190,7 +220,7 @@ async def query_rag(request: QueryRequest):
 @app.post("/flashcards")
 def generate_flashcards(request: FlashcardRequest):
     try:
-        flashcard_chain = get_flashcard_chain(vector_store)
+        flashcard_chain = get_flashcard_chain(vector_store, active_document=request.active_document)
         # The chain input is just the topic string because of RunnablePassthrough assigned to "topic"
         response = flashcard_chain.invoke(request.topic)
         return {"topic": request.topic, "flashcards": response["flashcards"] if "flashcards" in response else response}
@@ -202,11 +232,12 @@ class QuizRequest(BaseModel):
     topic: str
     count: int = 5
     difficulty: str = "Medium"
+    active_document: Optional[str] = None
 
 @app.post("/generate_quiz")
 def generate_quiz(request: QuizRequest):
     try:
-        quiz_func = get_quiz_chain(vector_store)
+        quiz_func = get_quiz_chain(vector_store, active_document=request.active_document)
         result = quiz_func({
             "topic": request.topic,
             "count": request.count,

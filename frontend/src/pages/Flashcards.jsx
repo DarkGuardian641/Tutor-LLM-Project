@@ -12,6 +12,7 @@ const Flashcards = () => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
+    const [activeDocument, setActiveDocument] = useState(null);
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
@@ -33,6 +34,7 @@ const Flashcards = () => {
 
             if (uploadResponse.ok) {
                 setUploadedFile(file.name);
+                setActiveDocument(file.name);
                 // 2. Generate immediately using filename as topic/context hint
                 // Actually, passing the filename as "topic" usually works well if RAG retrieves by filename or content
                 // Let's call the flashcard endpoint now
@@ -40,7 +42,10 @@ const Flashcards = () => {
                 const response = await fetch(`${API_BASE_URL}/flashcards`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ topic: `Key concepts from ${file.name}` })
+                    body: JSON.stringify({ 
+                        topic: `Key concepts from ${file.name}`,
+                        active_document: file.name
+                    })
                 });
 
                 if (response.ok) {
@@ -77,7 +82,10 @@ const Flashcards = () => {
             const response = await fetch(`${API_BASE_URL}/flashcards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic: topic })
+                body: JSON.stringify({ 
+                    topic: topic,
+                    active_document: activeDocument 
+                })
             });
 
             if (response.ok) {

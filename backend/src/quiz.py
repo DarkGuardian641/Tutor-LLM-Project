@@ -18,11 +18,16 @@ class Quiz(BaseModel):
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-def get_quiz_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"):
+def get_quiz_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud", active_document: str = None):
     """
     Creates a chain to generate quizzes based on context.
     """
-    retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+    search_kwargs = {"k": 5}
+    if active_document:
+        search_kwargs["filter"] = {"source": active_document}
+        print(f"Filtering Quiz context for document: {active_document}")
+        
+    retriever = vector_store.as_retriever(search_kwargs=search_kwargs)
     llm = ChatOllama(model=llm_model, temperature=0.7) # Higher temp for creativity
     
     # Set up JSON parser
@@ -32,8 +37,7 @@ def get_quiz_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"):
     Generate a quiz with {num_questions} multiple-choice questions (MCQs) about the topic: "{topic}".
     Difficulty Level: {difficulty}.
     
-    Use the provided context to ensure the questions are accurate and relevant to the material.
-    If the context is insufficient, use your general knowledge but prioritze the context.
+    CRITICAL INSTRUCTION: You MUST use the provided Context below to generate these questions. They must be directly related to the provided material. Do NOT use your general knowledge unless the context is completely empty and you have absolutely no choice.
     
     Context:
     {context}

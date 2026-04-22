@@ -4,7 +4,17 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
 def format_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
+    formatted = []
+    for doc in docs:
+        source = doc.metadata.get('source', 'Unknown Document')
+        page = doc.metadata.get('page', 'Unknown Page')
+        # Just use the basename for cleaner citations
+        import os
+        if os.path.isabs(source):
+            source = os.path.basename(source)
+        
+        formatted.append(f"[Source: {source}, Page: {page}]\n{doc.page_content}")
+    return "\n\n".join(formatted)
 
 def get_intent_chain(llm_model: str = "gpt-oss:120b-cloud"):
     """
@@ -38,21 +48,29 @@ def get_general_chain(llm_model: str = "gpt-oss:120b-cloud"):
     prompt = ChatPromptTemplate.from_template(template)
     return prompt | llm | StrOutputParser()
 
-def get_rag_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"):
+def get_rag_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud", active_document: str = None):
     """
     Creates and returns the RAG chain for textbook questions.
     """
-    retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+    search_kwargs = {"k": 5}
+    if active_document:
+        search_kwargs["filter"] = {"source": active_document}
+        print(f"Filtering RAG context for document: {active_document}")
+        
+    retriever = vector_store.as_retriever(search_kwargs=search_kwargs)
     
     llm = ChatOllama(model=llm_model)
 
     template = """You are an intelligent tutor assistant designed to help students prepare for exams.
     
     Guidelines for your answer:
-    1.  **Context First**: Use the provided context to answer the question.
-    2.  **Fallback**: If the provided context is empty or does not contain the answer, you MUST state "I couldn't find specific information about this in your uploaded documents." and then provide a helpful answer based on your general knowledge.
-    3.  **Structure**: Use bullet points or paragraphs.
-    4.  **Tone**: Formal and educational.
+    1.  **Context First**: You MUST generate responses ONLY from the uploaded document provided in the Context whenever possible. Rely on the context completely before considering anything else.
+    2.  **Fallback as Last Resort**: If and ONLY if the provided context is completely empty or does not contain any relevant information to answer the question, you MUST explicitly state that you are using your own knowledge ("LLM") to answer as a last resort, and then provide a helpful answer based on your general knowledge.
+    3.  **Explicit Citation**: You MUST explicitly mention the source of the generated answer at the very end of your response, separated by a blank line. 
+        - If you used the provided context (even partially), output: `Source: RAG (Uploaded File - [Source: <filename>, Page: <page>])` where you fill in the exact filename and page from the context metadata.
+        - If you used your own knowledge because the context was absolutely insufficient, output: `Source: LLM (Generated)`
+    4.  **Structure**: Use bullet points or paragraphs for readability.
+    5.  **Tone**: Formal and educational.
     
     Context:
     {context}
@@ -72,7 +90,7 @@ def get_rag_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"):
 
     return rag_chain
 
-def get_smart_response_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"):
+def get_smart_response_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud", active_document: str = None):
     """
     Orchestrates intent classification and routing.
     Note: Since we need to stream the final response, this function returns a generator.
@@ -86,5 +104,5 @@ def get_smart_response_chain(vector_store, llm_model: str = "gpt-oss:120b-cloud"
     return {
         "classifier": get_intent_chain(llm_model),
         "general": get_general_chain(llm_model),
-        "rag": get_rag_chain(vector_store, llm_model)
+        "rag": get_rag_chain(vector_store, llm_model, active_document=active_document)
     }

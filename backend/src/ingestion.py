@@ -24,13 +24,12 @@ def load_document(file_path: str) -> List[Document]:
     elif ext in ['.xlsx', '.xls']:
         loader = UnstructuredExcelLoader(file_path)
     elif ext in code_extensions:
-        # Treat code/text files as text
-        loader = TextLoader(file_path, encoding='utf-8')
+        # Treat code/text files as text with autodetect encoding to properly process uploads
+        loader = TextLoader(file_path, encoding='utf-8', autodetect_encoding=True)
     else:
         # Fallback to TextLoader for unknown text-based files, or raise error
-        # Trying TextLoader as a fallback for potential other code files
         try:
-            loader = TextLoader(file_path, encoding='utf-8')
+            loader = TextLoader(file_path, encoding='utf-8', autodetect_encoding=True)
         except:
              raise ValueError(f"Unsupported file type: {ext}")
 
